@@ -17,6 +17,7 @@ import torch.optim as optim
 import numpy as np
 from model import MetaNetRNN, AttnDecoderRNN, DecoderRNN, describe_model, WrapperEncoderRNN
 import generate_episode as ge
+import train
 from train import evaluation_battery, Lang, build_sample, evaluate, display_input_output
 
 # --
@@ -131,26 +132,26 @@ def eval_network(fn_in_model):
             describe_model(decoder)
             if eval_type == 'val':
                 print('Evaluating VALIDATION performance on pre-generated validation set')
-                acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
+                acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True)
                 print('Acc Retrieval (val): ' + str(round(acc_val_retrieval,1)))
                 print('Acc Generalize (val): ' + str(round(acc_val_gen,1)))
             elif eval_type == 'addprim_jump':
                 print('Evaluating TEST performance on SCAN addprim_jump')
                 print('  ...support set is just the isolated primitives')
                 mybatch = scan_evaluation_prim_only('addprim_jump','test',input_lang,output_lang)
-                acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
+                acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True)
             elif eval_type == 'length':
                 print('Evaluating TEST performance on SCAN length')
                 print('  ...over multiple support sets as contributed by the pre-generated validation set')
                 samples_val = scan_evaluation_val_support('length','test',input_lang,output_lang,samples_val)
-                acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
+                acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True)
                 print('Acc Retrieval (val): ' + str(round(acc_val_retrieval,1)))
                 print('Acc Generalize (val): ' + str(round(acc_val_gen,1)))
             elif eval_type == 'template_around_right':
                 print('Evaluating TEST performance on the SCAN around right')
                 print(' ...with just direction mappings as support set')
                 mybatch = scan_evaluation_dir_only('template_around_right','test',input_lang,output_lang)
-                acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
+                acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True)
             else:
                 assert False
 
@@ -180,5 +181,6 @@ if __name__ == "__main__":
         assert False # invalid episode_type argument
 
     # Run evaluation
+    train.USE_CUDA = USE_CUDA
     eval_network(fn_in_model)
         # Saves result as e.g.,'out_models/net_scan_prim_permutation.tar'
