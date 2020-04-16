@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 # All rights reserved.
- 
+
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
@@ -24,7 +24,7 @@ import generate_episode as ge
 # --
 
 # We based the seq2seq code on the PyTorch tutorial of Sean Robertson
-#   https://github.com/spro/practical-pytorch/blob/master/seq2seq-translation/seq2seq-translation-batched.ipynb 
+#   https://github.com/spro/practical-pytorch/blob/master/seq2seq-translation/seq2seq-translation-batched.ipynb
 
 USE_CUDA = torch.cuda.is_available()
 
@@ -50,7 +50,7 @@ class Lang:
 
     def variableFromSymbols(self, mylist, add_eos=True):
         # Convert a list of symbols to a tensor of indices (adding a EOS token at end)
-        # 
+        #
         # Input
         #  mylist : list of m symbols
         #  add_eos : true/false, if true add the EOS symbol at end
@@ -68,10 +68,10 @@ class Lang:
 
     def symbolsFromVector(self, v):
         # Convert indices to symbols, breaking where we get a EOS token
-        # 
+        #
         # Input
         #  v : list of m indices
-        #   
+        #
         # Output
         #  mylist : list of m or m-1 symbols (excluding EOS)
         mylist = []
@@ -85,7 +85,7 @@ class Lang:
 # Robertson's asMinutes and timeSince helper functions to print time elapsed and estimated time
 # remaining given the current time and progress
 
-def asMinutes(s): 
+def asMinutes(s):
     # convert seconds to minutes
     m = math.floor(s / 60)
     s -= m * 60
@@ -94,7 +94,7 @@ def asMinutes(s):
 def timeSince(since, percent):
     # prints time elapsed and estimated time remaining
     #
-    # Input 
+    # Input
     #  since : previous time
     #  percent : amount of training complete
     now = time.time()
@@ -107,7 +107,7 @@ def make_hashable(G):
     # Separate and sort stings, to make unique string identifier for an episode
     #
     # Input
-    #   G : string of elements separate by \n, specifying the structure of an episode 
+    #   G : string of elements separate by \n, specifying the structure of an episode
     G_str = str(G).split('\n')
     G_str.sort()
     out = '\n'.join(G_str)
@@ -125,7 +125,7 @@ def tabu_update(tabu_list,identifier):
 
 def get_unique_words(sentences):
     # Get a list of all the unique words in a list of sentences
-    # 
+    #
     # Input
     #  sentences: list of sentence strings
     # Output
@@ -150,7 +150,7 @@ def pad_seq(seq, max_length):
 
 def build_padded_var(list_seq, lang):
     # Transform python list to a padded torch tensor
-    # 
+    #
     # Input
     #  list_seq : list of n sequences (each sequence is a python list of symbols)
     #  lang : language object for translation into indices
@@ -172,7 +172,7 @@ def build_padded_var(list_seq, lang):
 
 def build_sample(x_support,y_support,x_query,y_query,input_lang,output_lang,myhash,grammar=''):
     # Build an episode from input/output examples
-    # 
+    #
     # Input
     #  x_support [length ns list of lists] : input sequences (each a python list of words/symbols)
     #  y_support [length ns list of lists] : output sequences (each a python list of words/symbols)
@@ -189,12 +189,12 @@ def build_sample(x_support,y_support,x_query,y_query,input_lang,output_lang,myha
 
     # store input and output sequences
     sample['identifier'] = myhash
-    sample['xs'] = x_support 
+    sample['xs'] = x_support
     sample['ys'] = y_support
     sample['xq'] = x_query
     sample['yq'] = y_query
     sample['grammar'] = grammar
-    
+
     # convert strings to indices, pad, and create tensors ready for input to network
     sample['xs_padded'],sample['xs_lengths'] = build_padded_var(x_support,input_lang) # (ns x max_length)
     sample['ys_padded'],sample['ys_lengths'] = build_padded_var(y_support,output_lang) # (ns x max_length)
@@ -203,7 +203,7 @@ def build_sample(x_support,y_support,x_query,y_query,input_lang,output_lang,myha
     return sample
 
 def extract(include,arr):
-    # Create a new list only using the included (boolean) elements of arr 
+    # Create a new list only using the included (boolean) elements of arr
     #
     # Input
     #  include : [n len] boolean array
@@ -214,14 +214,14 @@ def extract(include,arr):
 def evaluation_battery(sample_eval_list, encoder, decoder, input_lang, output_lang, max_length, verbose=False, force_cpu=False):
     # Evaluate a list of episodes
     #
-    # Input 
+    # Input
     #   sample_eval_list : list of evaluation sets to iterate through
     #   ...
     #   input_lang: Language object for input sequences
     #   output_lang: Language object for output sequences
     #   max_length : maximum length of a generated sequence
     #   verbose : print outcome or not?
-    # 
+    #
     # Output
     #   (acc_novel, acc_autoencoder) average accuracy for novel items in query set, and support items in query set
     if force_cpu:
@@ -248,7 +248,7 @@ def evaluation_battery(sample_eval_list, encoder, decoder, input_lang, output_la
 
 def evaluate(sample, encoder, decoder, input_lang, output_lang, max_length, force_cpu=False):
     # Evaluate an episode
-    # 
+    #
     # Input
     #   sample : [dict] generated validation episode, produced by "build_sample"
     #   ...
@@ -273,7 +273,7 @@ def evaluate(sample, encoder, decoder, input_lang, output_lang, max_length, forc
     encoder_embedding, dict_encoder = encoder(sample)
     encoder_embedding_steps = dict_encoder['embed_by_step']
     memory_attn_steps = dict_encoder['attn_by_step']
-    
+
     # Prepare input and output variables
     nq = len(sample['yq'])
     decoder_input = torch.tensor([output_lang.symbol2index[SOS_token]]*nq) # nq length tensor
@@ -281,21 +281,21 @@ def evaluate(sample, encoder, decoder, input_lang, output_lang, max_length, forc
 
     # Store output words and attention states
     decoded_words = []
-    
+
     # Run through decoder
     all_decoder_outputs = np.zeros((nq, max_length), dtype=int)
     all_attn_by_time = [] # list (over time step) of batch_size x max_input_length tensors
     if USE_CUDA:
-        decoder_input = decoder_input.cuda()    
+        decoder_input = decoder_input.cuda()
     for t in range(max_length):
         if type(decoder) is AttnDecoderRNN:
             decoder_output, decoder_hidden, attn_weights = decoder(decoder_input, decoder_hidden, encoder_embedding_steps)
             all_attn_by_time.append(attn_weights)
-        elif type(decoder) is DecoderRNN:        
+        elif type(decoder) is DecoderRNN:
             decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden)
         else:
             assert False
-        
+
         # Choose top symbol from output
         topv, topi = decoder_output.cpu().data.topk(1)
         decoder_input = topi.view(-1)
@@ -309,7 +309,7 @@ def evaluate(sample, encoder, decoder, input_lang, output_lang, max_length, forc
     for q in range(nq):
         myseq = output_lang.symbolsFromVector(all_decoder_outputs[q,:])
         yq_predict.append(myseq)
-    
+
     # compute accuracy
     v_acc = np.zeros(nq)
     for q in range(nq):
@@ -320,7 +320,7 @@ def evaluate(sample, encoder, decoder, input_lang, output_lang, max_length, forc
 
 def train(sample, encoder, decoder, encoder_optimizer, decoder_optimizer, input_lang, output_lang):
     # Update the model for a single training episode
-    # 
+    #
     # Input
     #   sample : [dict] generated training episode, produced by "build_sample"
     #   ...
@@ -338,12 +338,12 @@ def train(sample, encoder, decoder, encoder_optimizer, decoder_optimizer, input_
     # Run words through encoder
     encoder_embedding, dict_encoder = encoder(sample)
     encoder_embedding_steps = dict_encoder['embed_by_step']
-    
+
     # Prepare input and output variables
     nq = len(sample['yq']) # number of queries
     decoder_input = torch.tensor([output_lang.symbol2index[SOS_token]]*nq) # nq length tensor
     decoder_hidden = decoder.initHidden(encoder_embedding)
-    target_batches = torch.transpose(sample['yq_padded'], 0, 1) # (max_length x nq tensor) ... batch targets with padding    
+    target_batches = torch.transpose(sample['yq_padded'], 0, 1) # (max_length x nq tensor) ... batch targets with padding
     target_lengths = sample['yq_lengths']
     max_target_length = max(target_lengths)
     all_decoder_outputs = torch.zeros(max_target_length, nq, decoder.output_size)
@@ -351,7 +351,7 @@ def train(sample, encoder, decoder, encoder_optimizer, decoder_optimizer, input_
         decoder_input = decoder_input.cuda()
         target_batches = target_batches.cuda()
         all_decoder_outputs = all_decoder_outputs.cuda()
-    
+
     # Run through decoder one time step at a time
     for t in range(max_target_length):
         if type(decoder) is AttnDecoderRNN:
@@ -384,7 +384,7 @@ def train(sample, encoder, decoder, encoder_optimizer, decoder_optimizer, input_
 
 def display_input_output(input_patterns,output_patterns,target_patterns):
     # Verbose analysis of performance on query items
-    # 
+    #
     # Input
     #   input_patterns : list of input sequences (each in list form)
     #   output_patterns : list of output sequences, which are actual outputs (each in list form)
@@ -396,7 +396,7 @@ def display_input_output(input_patterns,output_patterns,target_patterns):
     for q in range(nq):
         assert isinstance(input_patterns[q],list)
         assert isinstance(output_patterns[q],list)
-        is_correct = output_patterns[q] == target_patterns[q]        
+        is_correct = output_patterns[q] == target_patterns[q]
         print('     ',end='')
         print(' '.join(input_patterns[q]),end='')
         print(' -> ',end='')
@@ -445,26 +445,26 @@ def get_episode_generator(episode_type):
         input_lang = Lang(input_symbols_scan)
         output_lang = Lang(output_symbols_scan)
         generate_episode_train = lambda tabu_episodes : generate_prim_augmentation(shuffle=True, nextra=nextra_prims, nsupport=20, nquery=20, input_lang=input_lang, output_lang=output_lang, scan_var_tuples=scan_all_var, tabu_list=tabu_episodes)
-        generate_episode_test = lambda tabu_episodes : generate_prim_augmentation(shuffle=False, nextra=0, nsupport=20, nquery=20, input_lang=input_lang, output_lang=output_lang, scan_var_tuples=scan_all_var, tabu_list=tabu_episodes)                    
+        generate_episode_test = lambda tabu_episodes : generate_prim_augmentation(shuffle=False, nextra=0, nsupport=20, nquery=20, input_lang=input_lang, output_lang=output_lang, scan_var_tuples=scan_all_var, tabu_list=tabu_episodes)
     elif episode_type == 'scan_around_right': # NeurIPS Exp 4 : Combining familiar concepts through meta-training
         nextra_prims = 2
         scan_all = ge.load_scan_file('all','train')
-        scan_all_var = ge.load_scan_dir_var('all','train')        
+        scan_all_var = ge.load_scan_dir_var('all','train')
         input_symbols_scan = get_unique_words([c[0] for c in scan_all]  + [str(i) for i in range(1,nextra_prims+1)])
         output_symbols_scan = get_unique_words([c[1] for c in scan_all] + ['I_' + str(i) for i in range(1,nextra_prims+1)])
         input_lang = Lang(input_symbols_scan)
         output_lang = Lang(output_symbols_scan)
         generate_episode_train = lambda tabu_episodes : generate_right_augmentation(shuffle=True, nextra=nextra_prims, nsupport=20, nquery=20, input_lang=input_lang, output_lang=output_lang, scan_var_tuples=scan_all_var, tabu_list=tabu_episodes)
-        generate_episode_test = lambda tabu_episodes : generate_right_augmentation(shuffle=False, nextra=0, nsupport=20, nquery=20, input_lang=input_lang, output_lang=output_lang, scan_var_tuples=scan_all_var, tabu_list=tabu_episodes)    
+        generate_episode_test = lambda tabu_episodes : generate_right_augmentation(shuffle=False, nextra=0, nsupport=20, nquery=20, input_lang=input_lang, output_lang=output_lang, scan_var_tuples=scan_all_var, tabu_list=tabu_episodes)
     elif episode_type == 'scan_length': # NeurIPS Exp 5 : Generalizing to longer instructions through meta-training
         nextra_prims = 20 # number of additional primitives to augment the episodes with
-        support_threshold = 12 # items with action length less than this belong in the support, 
+        support_threshold = 12 # items with action length less than this belong in the support,
                                # and greater than or equal to this length belong in the query
         scan_length_train = ge.load_scan_file('length','train')
         scan_length_test = ge.load_scan_file('length','test')
         scan_all = scan_length_train+scan_length_test
         scan_length_train_var = ge.load_scan_var('length','train')
-        scan_length_test_var = ge.load_scan_var('length','test')        
+        scan_length_test_var = ge.load_scan_var('length','test')
         input_symbols_scan = get_unique_words([c[0] for c in scan_all]  + [str(i) for i in range(1,nextra_prims+1)])
         output_symbols_scan = get_unique_words([c[1] for c in scan_all] + ['I_' + str(i) for i in range(1,nextra_prims+1)])
         input_lang = Lang(input_symbols_scan)
@@ -491,20 +491,20 @@ def generate_ME(nquery,nprims,input_lang,output_lang,maxlen=6,tabu_list=[]):
     #
 
     input_symbols = deepcopy(input_lang.symbols)
-    output_symbols = deepcopy(output_lang.symbols)     
+    output_symbols = deepcopy(output_lang.symbols)
     assert(nprims == len(input_symbols))
     count = 0
     while True:
         random.shuffle(input_symbols)
         random.shuffle(output_symbols)
-        D_str = '\n'.join([input_symbols[idx] + ' -> ' + output_symbols[idx] for idx in range(nprims)])   
-        identifier = make_hashable(D_str)        
+        D_str = '\n'.join([input_symbols[idx] + ' -> ' + output_symbols[idx] for idx in range(nprims)])
+        identifier = make_hashable(D_str)
         D_support,D_query = ge.sample_ME_concat_data(nquery=nquery,input_symbols=input_symbols,output_symbols=output_symbols,maxlen=maxlen,inc_support_in_query=use_resconstruct_loss)
         if identifier not in tabu_list:
             break
         count += 1
         if count > max_try_novel:
-            raise Exception('We were unable to generate an episode that is not on the tabu list')        
+            raise Exception('We were unable to generate an episode that is not on the tabu list')
     x_support = [d[0].split(' ') for d in D_support]
     y_support = [d[1].split(' ') for d in D_support]
     x_query = [d[0].split(' ') for d in D_query]
@@ -536,11 +536,11 @@ def generate_prim_permutation(shuffle,nsupport,nquery,input_lang,output_lang,sca
     y_support = [d[1].split(' ') for d in D_support]
     x_query = [d[0].split(' ') for d in D_query]
     y_query = [d[1].split(' ') for d in D_query]
-    return build_sample(x_support,y_support,x_query,y_query,input_lang,output_lang,identifier)    
+    return build_sample(x_support,y_support,x_query,y_query,input_lang,output_lang,identifier)
 
 def generate_prim_augmentation(shuffle,nsupport,nquery,input_lang,output_lang,scan_var_tuples,nextra,tabu_list=[]):
     # Generate a SCAN episode with primitive augmentation,
-    #  The tabu list identifier is only determined based on the assignment of the "jump" primitive 
+    #  The tabu list identifier is only determined based on the assignment of the "jump" primitive
     #
     # Input
     #  shuffle: permute how the input primitives map to the output actions? (true/false)
@@ -556,7 +556,7 @@ def generate_prim_augmentation(shuffle,nsupport,nquery,input_lang,output_lang,sc
             index_prim = input_prim_list.index(special_prim)
             D_str = D_primitive[index_prim][0] + ' -> ' + D_primitive[index_prim][1]
         except ValueError:
-            D_str = 'no jump'    
+            D_str = 'no jump'
         identifier = D_str
         if not shuffle: # ignore tabu list if we aren't shuffling primitive assignments
             break
@@ -589,7 +589,7 @@ def generate_right_augmentation(shuffle,nsupport,nquery,input_lang,output_lang,s
             index_prim = input_angle_list.index(special_prim)
             D_str = D_angles[index_prim][0] + ' -> ' + D_angles[index_prim][1]
         except ValueError:
-            D_str = 'no right'    
+            D_str = 'no right'
         identifier = D_str
         if not shuffle: # ignore tabu list if we aren't shuffling primitive assignments
             break
@@ -606,7 +606,7 @@ def generate_right_augmentation(shuffle,nsupport,nquery,input_lang,output_lang,s
 
 def generate_length(shuffle,nsupport,nquery,input_lang,output_lang,scan_tuples_support_variable,scan_tuples_query_variable,nextra,tabu_list=[]):
     # ** This episode allows different sets of input/output patterns for the support and query **
-    # Generate a SCAN episode with primitive augmentation. 
+    # Generate a SCAN episode with primitive augmentation.
     #  The tabu list is based on the assignment of all of the primitive inputs to primitive actions.
     #
     # Input
@@ -632,14 +632,14 @@ def generate_length(shuffle,nsupport,nquery,input_lang,output_lang,scan_tuples_s
     x_query = [d[0].split(' ') for d in D_query]
     y_query = [d[1].split(' ') for d in D_query]
     return build_sample(x_support,y_support,x_query,y_query,input_lang,output_lang,identifier)
-        
+
 if __name__ == "__main__":
 
     # Training parameters
     num_episodes_val = 5 # number of episodes to use as validation throughout learning
     clip = 50.0 # clip gradients with larger magnitude than this
     max_try_novel = 100 # number of attempts to find a novel episode (not in tabu list) before throwing an error
-    
+
     # Adjustable parameters
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_episodes', type=int, default=10000, help='number of episodes for training')
@@ -681,7 +681,7 @@ if __name__ == "__main__":
 
     if not os.path.isfile(fn_out_model):
         print("Training a new network...")
-        print("  Episode type is " + episode_type)        
+        print("  Episode type is " + episode_type)
         generate_episode_train, generate_episode_test, input_lang,output_lang = get_episode_generator(episode_type)
         if USE_CUDA:
             torch.cuda.set_device(gpu_num)
@@ -691,7 +691,7 @@ if __name__ == "__main__":
         print(' for ' + str(num_episodes) + ' episodes')
         input_size = input_lang.n_symbols
         output_size = output_lang.n_symbols
-        
+
         if disable_memory:
             encoder = WrapperEncoderRNN(emb_size, input_size, output_size, nlayers, dropout_p)
         else:
@@ -732,7 +732,7 @@ if __name__ == "__main__":
 
             # generate a random episode
             sample = generate_episode_train(tabu_episodes)
-            
+
             # batch updates (where batch includes the entire support set)
             train_loss = train(sample, encoder, decoder, encoder_optimizer, decoder_optimizer, input_lang, output_lang)
             avg_train_loss += train_loss
@@ -778,7 +778,7 @@ if __name__ == "__main__":
     else: # evaluate model if filename already exists
         USE_CUDA = False
         print('Results file already exists. Loading file and evaluating...')
-        print('Loading model: ' + fn_out_model)        
+        print('Loading model: ' + fn_out_model)
         checkpoint = torch.load(fn_out_model, map_location='cpu') # evaluate model on CPU
         if 'episode' in checkpoint: print(' Loading epoch ' + str(checkpoint['episode']) + ' of ' + str(checkpoint['num_episodes']))
         input_lang = checkpoint['input_lang']
@@ -799,7 +799,7 @@ if __name__ == "__main__":
         if disable_memory:
             encoder = WrapperEncoderRNN(emb_size, input_size, output_size, nlayers, dropout_p)
         else:
-            encoder = MetaNetRNN(emb_size, input_size, output_size, nlayers, dropout_p)        
+            encoder = MetaNetRNN(emb_size, input_size, output_size, nlayers, dropout_p)
         if use_attention:
             decoder = AttnDecoderRNN(emb_size, output_size, nlayers, dropout_p)
         else:

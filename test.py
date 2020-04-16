@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 # All rights reserved.
- 
+
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
@@ -21,7 +21,7 @@ from train import evaluation_battery, Lang, build_sample, evaluate, display_inpu
 
 # --
 # Evaluate a trained meta seq2seq model on a SCAN split ("add jump", "around right", length", etc.)
-# 
+#
 # See Main for example of how to run...
 # --
 
@@ -65,7 +65,7 @@ def scan_evaluation_dir_only(mytype,split,input_lang,output_lang):
 def scan_evaluation_val_support(mytype,split,input_lang,output_lang,samples_val):
     # Use the pre-generated in the validation episodes as the support set.
     #  Replace the validation episodes' query sets as the rest of the SCAN split (e.g., the entire length test set)
-    #  
+    #
     # Input
     #  mytype : type of SCAN experiment
     #  split : 'train' or 'test'
@@ -92,8 +92,8 @@ def eval_network(fn_in_model):
     assert(os.path.isfile(fn_in_model))
     print('  Checkpoint found...')
     print('  Processing model: ' + fn_in_model)
-    print('  Writing to file: ' + fn_out_res_test)        
-    checkpoint = torch.load(fn_in_model, map_location='cpu') # evaluate model on CPU    
+    print('  Writing to file: ' + fn_out_res_test)
+    checkpoint = torch.load(fn_in_model, map_location='cpu') # evaluate model on CPU
     input_lang = checkpoint['input_lang']
     output_lang = checkpoint['output_lang']
     emb_size = checkpoint['emb_size']
@@ -112,7 +112,7 @@ def eval_network(fn_in_model):
     if disable_memory:
         encoder = WrapperEncoderRNN(emb_size, input_size, output_size, nlayers, dropout_p)
     else:
-        encoder = MetaNetRNN(emb_size, input_size, output_size, nlayers, dropout_p) 
+        encoder = MetaNetRNN(emb_size, input_size, output_size, nlayers, dropout_p)
     if use_attention:
         decoder = AttnDecoderRNN(emb_size, output_size, nlayers, dropout_p)
     else:
@@ -122,24 +122,24 @@ def eval_network(fn_in_model):
         decoder = decoder.cuda()
     encoder.load_state_dict(checkpoint['encoder_state_dict'])
     decoder.load_state_dict(checkpoint['decoder_state_dict'])
-   
+
     with open(fn_out_res_test, 'w') as f_test:
         with redirect_stdout(f_test):
             if 'episode' in checkpoint:
                 print(' Loading epoch ' + str(checkpoint['episode']) + ' of ' + str(checkpoint['num_episodes']))
             describe_model(encoder)
             describe_model(decoder)
-            if eval_type == 'val': 
+            if eval_type == 'val':
                 print('Evaluating VALIDATION performance on pre-generated validation set')
                 acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
                 print('Acc Retrieval (val): ' + str(round(acc_val_retrieval,1)))
                 print('Acc Generalize (val): ' + str(round(acc_val_gen,1)))
-            elif eval_type == 'addprim_jump':                    
+            elif eval_type == 'addprim_jump':
                 print('Evaluating TEST performance on SCAN addprim_jump')
                 print('  ...support set is just the isolated primitives')
                 mybatch = scan_evaluation_prim_only('addprim_jump','test',input_lang,output_lang)
                 acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
-            elif eval_type == 'length':                    
+            elif eval_type == 'length':
                 print('Evaluating TEST performance on SCAN length')
                 print('  ...over multiple support sets as contributed by the pre-generated validation set')
                 samples_val = scan_evaluation_val_support('length','test',input_lang,output_lang,samples_val)
@@ -179,6 +179,6 @@ if __name__ == "__main__":
     else:
         assert False # invalid episode_type argument
 
-    # Run evaluation    
+    # Run evaluation
     eval_network(fn_in_model)
         # Saves result as e.g.,'out_models/net_scan_prim_permutation.tar'

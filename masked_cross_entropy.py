@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 # All rights reserved.
- 
+
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
@@ -8,7 +8,7 @@ import torch
 from torch.nn import functional
 
 # Functions lightly adapted from PyTorch seq2seq tutorial of Sean Robertson
-#   https://github.com/spro/practical-pytorch/blob/master/seq2seq-translation/seq2seq-translation-batched.ipynb 
+#   https://github.com/spro/practical-pytorch/blob/master/seq2seq-translation/seq2seq-translation-batched.ipynb
 
 def sequence_mask(sequence_length, max_len=None):
     if max_len is None:

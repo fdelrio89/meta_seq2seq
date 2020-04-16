@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 # All rights reserved.
- 
+
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
@@ -14,7 +14,7 @@ import numpy as np
 # --
 
 # We based the seq2seq code on the PyTorch tutorial of Sean Robertson
-#   https://github.com/spro/practical-pytorch/blob/master/seq2seq-translation/seq2seq-translation-batched.ipynb 
+#   https://github.com/spro/practical-pytorch/blob/master/seq2seq-translation/seq2seq-translation-batched.ipynb
 
 def describe_model(net):
     if type(net) is MetaNetRNN:
@@ -62,7 +62,7 @@ class MetaNetRNN(nn.Module):
     #   3) Key-value memory for embedding query items with support context
     #   3) MLP to reduce the dimensionality of the context-sensitive embedding
     def __init__(self, embedding_dim, input_size, output_size, nlayers, dropout_p=0.1, bidirectional=True, tie_encoders=True):
-        # 
+        #
         # Input
         #  embedding_dim : number of hidden units in RNN encoder, and size of all embeddings
         #  input_size : number of input symbols
@@ -83,7 +83,7 @@ class MetaNetRNN(nn.Module):
         self.suppport_embedding = EncoderRNN(input_size, embedding_dim, nlayers, dropout_p, bidirectional)
         if tie_encoders:
             self.query_embedding = self.suppport_embedding
-        else:    
+        else:
             self.query_embedding = EncoderRNN(input_size, embedding_dim, nlayers, dropout_p, bidirectional)
         self.output_embedding = EncoderRNN(output_size, embedding_dim, nlayers, dropout_p, bidirectional)
         self.hidden = nn.Linear(embedding_dim*2,embedding_dim)
@@ -95,7 +95,7 @@ class MetaNetRNN(nn.Module):
         #
         # Input
         #   sample: episode dict wrapper for ns support and nq query examples (see 'build_sample' function in training code)
-        # 
+        #
         # Output
         #   context_last : [nq x embedding]; last step embedding for each query example
         #   embed_by_step: embedding at every step for each query [max_xq_length x nq x embedding_dim]
@@ -148,7 +148,7 @@ class EncoderRNN(nn.Module):
         #
         # Input
         #  input_size : number of input symbols
-        #  embedding_dim : number of hidden units in RNN encoder, and size of all embeddings        
+        #  embedding_dim : number of hidden units in RNN encoder, and size of all embeddings
         #  nlayers : number of hidden layers
         #  dropout : dropout applied to symbol embeddings and RNNs
         #  bidirectional : use a bidirectional LSTM instead and sum of the resulting embeddings
@@ -156,7 +156,7 @@ class EncoderRNN(nn.Module):
         super(EncoderRNN, self).__init__()
         self.nlayers = nlayers
         self.input_size = input_size
-        self.embedding_dim = embedding_dim        
+        self.embedding_dim = embedding_dim
         self.dropout_p = dropout_p
         self.bi = bidirectional
         self.embedding = nn.Embedding(input_size, embedding_dim)
@@ -164,13 +164,13 @@ class EncoderRNN(nn.Module):
         self.lstm = nn.LSTM(embedding_dim, embedding_dim, num_layers=nlayers, dropout=dropout_p, bidirectional=bidirectional)
 
     def forward(self, z_padded, z_lengths):
-        # Input 
+        # Input
         #   z_padded : LongTensor (n x max_length); list of n padded input sequences
-        #   z_lengths : Python list (length n) for length of each padded input sequence        
-        # 
+        #   z_lengths : Python list (length n) for length of each padded input sequence
+        #
         # Output
         #   hidden is (n x embedding_size); last hidden state for each input sequence
-        #   embed_by_step is (max_length x n x embedding_size); stepwise hidden states for each input sequence                 
+        #   embed_by_step is (max_length x n x embedding_size); stepwise hidden states for each input sequence
         #   seq_len is tensor of length n; length of each input sequence
         z_embed = self.embedding(z_padded) # n x max_length x embedding_size
         z_embed = self.dropout(z_embed) # n x max_length x embedding_size
@@ -187,7 +187,7 @@ class EncoderRNN(nn.Module):
         packed_input = torch.nn.utils.rnn.pack_padded_sequence(z_embed, z_lengths, batch_first=True)
         packed_output, (hidden, cell) = self.lstm(packed_input)
              # hidden is nlayers*num_directions x n x embedding_size
-             # hidden and cell are unpacked, such that they stores the last hidden state for each unpadded sequence        
+             # hidden and cell are unpacked, such that they stores the last hidden state for each unpadded sequence
         hidden_by_step, _ = torch.nn.utils.rnn.pad_packed_sequence(packed_output) # max_length x n x embedding_size*num_directions
 
         # If biLSTM, sum the outputs for each direction
@@ -206,12 +206,12 @@ class EncoderRNN(nn.Module):
 
         return hidden, {"embed_by_step" : hidden_by_step, "seq_len" : seq_len}
                 # hidden is (n x embedding_size); last hidden state for each input sequence
-                # embed_by_step is (max_length x n x embedding_size); stepwise hidden states for each input sequence                 
+                # embed_by_step is (max_length x n x embedding_size); stepwise hidden states for each input sequence
                 # seq_len is tensor of length n; length of each input sequence
 
 class WrapperEncoderRNN(EncoderRNN):
     # Wrapper for RNN encoder to behave like MetaNetRNN encoder.
-    #  This isn't really doing meta-learning, since it is ignoring the support set entirely. 
+    #  This isn't really doing meta-learning, since it is ignoring the support set entirely.
     #  Instead, it allows us to train a standard sequence-to-sequence model, using the query set as the batch.
     def __init__(self, embedding_dim, input_size, output_size, nlayers, dropout_p=0.1, bidirectional=True, tie_encoders=True):
         super(WrapperEncoderRNN, self).__init__(input_size, embedding_dim, nlayers, dropout_p, bidirectional)
@@ -247,10 +247,10 @@ class Attn(nn.Module):
 class AttnDecoderRNN(nn.Module):
     #
     # One-step batch LSTM decoder with Luong et al. attention
-    # 
+    #
     def __init__(self, hidden_size, output_size, nlayers, dropout_p=0.1):
         #
-        # Input        
+        # Input
         #  hidden_size : number of hidden units in RNN, and embedding size for output symbols
         #  output_size : number of output symbols
         #  nlayers : number of hidden layers
@@ -268,7 +268,7 @@ class AttnDecoderRNN(nn.Module):
         self.attn = Attn()
         self.concat = nn.Linear(hidden_size * 2, hidden_size)
         self.out = nn.Linear(hidden_size, output_size)
-        
+
     def forward(self, input, last_hidden, encoder_outputs):
         #
         # Run batch decoder forward for a single time step.
@@ -283,8 +283,8 @@ class AttnDecoderRNN(nn.Module):
         # Output
         #   output : unnormalized output probabilities, batch_size x output_size
         #   hidden : current decoder state, which is pair of tensors [nlayer x batch_size x hidden_size] (pair for hidden and cell)
-        #   attn_weights : attention weights, batch_size x max_input_length 
-        # 
+        #   attn_weights : attention weights, batch_size x max_input_length
+        #
         # Embed each input symbol
         batch_size = input.numel()
         embedding = self.embedding(input) # batch_size x hidden_size
@@ -298,11 +298,11 @@ class AttnDecoderRNN(nn.Module):
         context, attn_weights = self.attn(rnn_output.transpose(0,1), encoder_outputs.transpose(0,1), encoder_outputs.transpose(0,1))
             # context : batch_size x 1 x hidden_size
             # attn_weights : batch_size x 1 x max_input_length
-        
+
         # Concatenate the context vector and RNN hidden state, and map to an output
         rnn_output = rnn_output.squeeze(0) # batch_size x hidden_size
         context = context.squeeze(1) # batch_size x hidden_size
-        attn_weights = attn_weights.squeeze(1) # batch_size x max_input_length        
+        attn_weights = attn_weights.squeeze(1) # batch_size x max_input_length
         concat_input = torch.cat((rnn_output, context), 1) # batch_size x hidden_size*2
         concat_output = self.tanh(self.concat(concat_input)) # batch_size x hidden_size
         output = self.out(concat_output) # batch_size x output_size
@@ -312,7 +312,7 @@ class AttnDecoderRNN(nn.Module):
             # attn_weights: tensor of size (batch_size x max_input_length)
 
     def initHidden(self, encoder_message):
-        # Populate the hidden variables with a message from the decoder. 
+        # Populate the hidden variables with a message from the decoder.
         # All layers, and both the hidden and cell vectors, are filled with the same message.
         #   message : batch_size x hidden_size tensor
         encoder_message = encoder_message.unsqueeze(0) # 1 x batch_size x hidden_size
@@ -324,7 +324,7 @@ class DecoderRNN(nn.Module):
     # One-step simple batch LSTM decoder with no attention
     #
     def __init__(self, hidden_size, output_size, nlayers, dropout_p=0.1):
-        # Input        
+        # Input
         #  hidden_size : number of hidden units in RNN, and embedding size for output symbols
         #  output_size : number of output symbols
         #  nlayers : number of hidden layers
@@ -338,12 +338,12 @@ class DecoderRNN(nn.Module):
         self.dropout = nn.Dropout(dropout_p)
         self.rnn = nn.LSTM(hidden_size, hidden_size, num_layers=nlayers, dropout=dropout_p)
         self.out = nn.Linear(hidden_size, output_size)
-        
+
     def forward(self, input, last_hidden):
         # Run batch decoder forward for a single time step.
         #
         # Input
-        #  input: LongTensor of length batch_size 
+        #  input: LongTensor of length batch_size
         #  last_hidden: previous decoder state, which is pair of tensors [nlayer x batch_size x hidden_size] (pair for hidden and cell)
         #
         # Output
@@ -365,7 +365,7 @@ class DecoderRNN(nn.Module):
             # hidden: pair of size [nlayer x batch_size x hidden_size] (pair for hidden and cell)
 
     def initHidden(self, encoder_message):
-        # Populate the hidden variables with a message from the decoder. 
+        # Populate the hidden variables with a message from the decoder.
         # All layers, and both the hidden and cell vectors, are filled with the same message.
         #   message : batch_size x hidden_size tensor
         encoder_message = encoder_message.unsqueeze(0) # 1 x batch_size x hidden_size

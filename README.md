@@ -1,6 +1,6 @@
 # PyTorch implementation of Meta Sequence-to-Sequence Learning
 
-Meta seq2seq learning is a form of memory-based meta-learning for seq2seq models. Vanilla neural nets struggle with compositionality, but they can be improved through training on a series of seq2seq problems to acquire the compositional skills needed for solving new problems. 
+Meta seq2seq learning is a form of memory-based meta-learning for seq2seq models. Vanilla neural nets struggle with compositionality, but they can be improved through training on a series of seq2seq problems to acquire the compositional skills needed for solving new problems.
 
 <img src="data/meta_seq2seq.jpg" alt="Example of meta seq2seq architecture" width="600"/>
 
@@ -15,14 +15,14 @@ Please cite the following paper:
 
 I am grateful to Sean Robertson for his [seq2seq tutorial](https://github.com/spro/practical-pytorch/blob/master/seq2seq-translation/seq2seq-translation-batched.ipynb) which was the basis of the seq2seq code.
 
-### Pre-requisites 
-Python 3   
-numpy   
+### Pre-requisites
+Python 3
+numpy
 PyTorch (developed on v1.0)
 
 ### Using the code
 
-**Training a model**   
+**Training a model**
 To run the model with default parameters from the NeurIPS paper, trained on the Mutual Exclusivity task, you can simply type:
 ```python
 python train.py
@@ -64,16 +64,16 @@ optional arguments:
   --disable_recon_loss  Disable reconstruction loss, where support items are
                         included also as query items
   --gpu GPU             set which GPU we want to use
-```  
+```
 
 The important argument ``--episode_type`` determines which experiment to run and can take the following values:
 * `ME` : NeurIPS Exp 1; Mutual exclusivity
-* `scan_prim_permutation` : NeurIPS Exp 2; SCAN task; Adding a new primitive through permutation meta-training 
+* `scan_prim_permutation` : NeurIPS Exp 2; SCAN task; Adding a new primitive through permutation meta-training
 * `scan_prim_augmentation` : NeurIPS Exp 3; SCAN task; Adding a new primitive through augmentation meta-training
 * `scan_around_right` : NeurIPS Exp 4; SCAN task; Combining familiar concepts through meta-training
 * `scan_length` : NeurIPS Exp 5; SCAN task; Generalizing to longer instructions through meta-training
 
-**Testing a model**   
+**Testing a model**
 Models trained on SCAN are evaluated using the `test.py` script
 
 After running, say,
@@ -88,7 +88,7 @@ python test.py --episode_type scan_prim_permutation --fn_in_model net_scan_prim_
 ```
 to evaluate the model on the SCAN task as described in the paper, where the SCAN split is determined by the type of episode it was trained on.
 
-The `test.py` script has arguments: 
+The `test.py` script has arguments:
 ```
 optional arguments:
   -h, --help            show this help message and exit

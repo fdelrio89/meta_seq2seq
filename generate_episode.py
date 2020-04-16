@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 # All rights reserved.
- 
+
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
@@ -14,7 +14,7 @@ from copy import deepcopy
 
 def sample_ME_concat_data(nquery,input_symbols,output_symbols,maxlen,maxntry=500,inc_support_in_query=False):
 	# Sample ME episode based on current ordering of input/output symbols (already randomized)
-	# 
+	#
 	# Input
 	#  nquery : number of query examples
 	#  input_symbols : list of nprim input symbols (already permuted)
@@ -35,12 +35,12 @@ def sample_ME_concat_data(nquery,input_symbols,output_symbols,maxlen,maxntry=500
 	while len(D_query)<nquery:
 		mylen = random.randint(2,maxlen)
 		dat_list = [random.choice(pairs) for _ in range(mylen)]
-		dat_in, dat_out = zip(*dat_list)		
+		dat_in, dat_out = zip(*dat_list)
 		dat_in = ' '.join(dat_in)
 		dat_out = ' '.join(dat_out)
 		D_query.add((dat_in,dat_out))
 		if ntry > maxntry:
-			raise Exception('Maximum number of tries to generate valid dataset')	
+			raise Exception('Maximum number of tries to generate valid dataset')
 	D_query = list(D_query)
 	if inc_support_in_query:
 		D_query += deepcopy(D_support)
@@ -80,7 +80,7 @@ def sentence_replace_var(sentence,list_source,list_target):
 	assert(len(list_source)==len(list_target))
 	for i in range(len(list_source)):
 		sentence = sentence.replace(list_source[i],list_target[i])
-	return sentence	
+	return sentence
 
 def load_scan_var(mytype,split):
 	# Load SCAN tasks from file and replace action primitives (walk, look, run, jump) with variables
@@ -104,7 +104,7 @@ def load_scan_var(mytype,split):
 
 	# replacement placeholder primitives
 	scan_placeholder_tuples = [('primitive'+str(i),'I_ACT_'+str(i)) for i in range(1,nprim+1)]
-	list_target_command = [p[0] for p in scan_placeholder_tuples] # each input primitive as target	
+	list_target_command = [p[0] for p in scan_placeholder_tuples] # each input primitive as target
 	list_target_output = [p[1] for p in scan_placeholder_tuples] # each output primitive as target
 
 	# do replacement
@@ -135,14 +135,14 @@ def load_scan_dir_var(mytype,split):
 
 	# replacement placeholder primitives
 	scan_placeholder_tuples = [('primitive'+str(i),'I_ACT_'+str(i)) for i in range(1,nprim+1)]
-	list_target_command = [p[0] for p in scan_placeholder_tuples] # each input primitive as target	
+	list_target_command = [p[0] for p in scan_placeholder_tuples] # each input primitive as target
 	list_target_output = [p[1] for p in scan_placeholder_tuples] # each output primitive as target
 
 	# do replacement
 	for i in range(len(scan_tuples_variable)):
 		scan_tuples_variable[i][0] = sentence_replace_var(scan_tuples_variable[i][0], list_source_command, list_target_command)
 		scan_tuples_variable[i][1] = sentence_replace_var(scan_tuples_variable[i][1], list_source_output, list_target_output)
-	return scan_tuples_variable	
+	return scan_tuples_variable
 
 def sample_augment_scan(nsupport,nquery,scan_tuples_variable,shuffle,nextra=0,inc_support_in_query=False):
 	# Both the query and the support set contain example input/output patterns
@@ -173,7 +173,7 @@ def sample_augment_scan(nsupport,nquery,scan_tuples_variable,shuffle,nextra=0,in
 	scan_primitive_tuples = [('walk','I_WALK'),('look','I_LOOK'),('run','I_RUN'),('jump','I_JUMP')]
 	if nextra > 0:
 		scan_primitives_extra = [(str(i),'I_'+str(i)) for i in range(1,nextra+1)]
-		scan_primitive_tuples += scan_primitives_extra	
+		scan_primitive_tuples += scan_primitives_extra
 	unzip = list(zip(*scan_primitive_tuples))
 	list_target_command = list(unzip[0])
 	list_target_output = list(unzip[1])
@@ -183,7 +183,7 @@ def sample_augment_scan(nsupport,nquery,scan_tuples_variable,shuffle,nextra=0,in
 	list_target_command = list_target_command[:nprim_replace]
 	list_target_output = list_target_output[:nprim_replace]
 
-	# Replace placeholders with grounded commands and actions		
+	# Replace placeholders with grounded commands and actions
 	scan_placeholder_tuples = [('primitive'+str(i),'I_ACT_'+str(i)) for i in range(1,nprim_replace+1)]
 	list_source_command = [p[0] for p in scan_placeholder_tuples]
 	list_source_output = [p[1] for p in scan_placeholder_tuples]
@@ -193,11 +193,11 @@ def sample_augment_scan(nsupport,nquery,scan_tuples_variable,shuffle,nextra=0,in
 	for i in range(len(D_support)):
 		D_support[i][0] = sentence_replace_var(D_support[i][0], list_source_command, list_target_command)
 		D_support[i][1] = sentence_replace_var(D_support[i][1], list_source_output, list_target_output)
-	
+
 	D_primitive = list(zip(list_target_command,list_target_output))
 
 	if inc_support_in_query:
-		D_query += deepcopy(D_support)		
+		D_query += deepcopy(D_support)
 	return D_support, D_query, D_primitive
 
 def sample_augment_direction_scan(nsupport,nquery,scan_tuples_variable,shuffle,nextra=0,inc_support_in_query=False):
@@ -229,7 +229,7 @@ def sample_augment_direction_scan(nsupport,nquery,scan_tuples_variable,shuffle,n
 	scan_primitive_tuples = [('right','I_TURN_RIGHT'),('left','I_TURN_LEFT')]
 	if nextra > 0:
 		scan_primitives_extra = [(str(i),'I_'+str(i)) for i in range(1,nextra+1)]
-		scan_primitive_tuples += scan_primitives_extra	
+		scan_primitive_tuples += scan_primitives_extra
 	unzip = list(zip(*scan_primitive_tuples))
 	list_target_command = list(unzip[0])
 	list_target_output = list(unzip[1])
@@ -239,7 +239,7 @@ def sample_augment_direction_scan(nsupport,nquery,scan_tuples_variable,shuffle,n
 	list_target_command = list_target_command[:nprim_replace]
 	list_target_output = list_target_output[:nprim_replace]
 
-	# Replace placeholders with grounded commands and actions		
+	# Replace placeholders with grounded commands and actions
 	scan_placeholder_tuples = [('primitive'+str(i),'I_ACT_'+str(i)) for i in range(1,nprim_replace+1)]
 	list_source_command = [p[0] for p in scan_placeholder_tuples]
 	list_source_output = [p[1] for p in scan_placeholder_tuples]
@@ -249,10 +249,10 @@ def sample_augment_direction_scan(nsupport,nquery,scan_tuples_variable,shuffle,n
 	for i in range(len(D_support)):
 		D_support[i][0] = sentence_replace_var(D_support[i][0], list_source_command, list_target_command)
 		D_support[i][1] = sentence_replace_var(D_support[i][1], list_source_output, list_target_output)
-	
+
 	D_primitive = list(zip(list_target_command,list_target_output))
 	if inc_support_in_query:
-		D_query += deepcopy(D_support)		
+		D_query += deepcopy(D_support)
 	return D_support, D_query, D_primitive
 
 def sample_augment_scan_separate(nsupport,nquery,scan_tuples_support_variable,scan_tuples_query_variable,shuffle,nextra=0,inc_support_in_query=False):
@@ -283,13 +283,13 @@ def sample_augment_scan_separate(nsupport,nquery,scan_tuples_support_variable,sc
 	scan_tuples_query_variable = deepcopy(scan_tuples_query_variable)
 	random.shuffle(scan_tuples_query_variable)
 	D_query = scan_tuples_query_variable[:nquery]
-	
+
 	# Shuffle assignment of primitive commands to primitive actions
 	nprim_replace = 4
 	scan_primitive_tuples = [('walk','I_WALK'),('look','I_LOOK'),('run','I_RUN'),('jump','I_JUMP')]
 	if nextra > 0:
 		scan_primitives_extra = [(str(i),'I_'+str(i)) for i in range(1,nextra+1)]
-		scan_primitive_tuples += scan_primitives_extra	
+		scan_primitive_tuples += scan_primitives_extra
 	unzip = list(zip(*scan_primitive_tuples))
 	list_target_command = list(unzip[0])
 	list_target_output = list(unzip[1])
@@ -299,7 +299,7 @@ def sample_augment_scan_separate(nsupport,nquery,scan_tuples_support_variable,sc
 	list_target_command = list_target_command[:nprim_replace]
 	list_target_output = list_target_output[:nprim_replace]
 
-	# Replace placeholders with grounded commands and actions		
+	# Replace placeholders with grounded commands and actions
 	scan_placeholder_tuples = [('primitive'+str(i),'I_ACT_'+str(i)) for i in range(1,nprim_replace+1)]
 	list_source_command = [p[0] for p in scan_placeholder_tuples]
 	list_source_output = [p[1] for p in scan_placeholder_tuples]
@@ -309,24 +309,24 @@ def sample_augment_scan_separate(nsupport,nquery,scan_tuples_support_variable,sc
 	for i in range(len(D_support)):
 		D_support[i][0] = sentence_replace_var(D_support[i][0], list_source_command, list_target_command)
 		D_support[i][1] = sentence_replace_var(D_support[i][1], list_source_output, list_target_output)
-	
+
 	D_primitive = list(zip(list_target_command,list_target_output))
 
 	if inc_support_in_query:
-		D_query += deepcopy(D_support)		
+		D_query += deepcopy(D_support)
 	return D_support, D_query, D_primitive
 
 if __name__ == "__main__":
 	scan_tuples = load_scan_file('simple','train') # load SCAN from file
 	scan_tuples_variable = load_scan_var('simple','train') # load SCAN from file
-	
+
 	print("Example of primitive replacement...")
 
 	D_support, D_query, D_primitive = sample_augment_scan(5,5,scan_tuples_variable,shuffle=True,nextra=24,inc_support_in_query=False)
 	print("New mapping...")
 	print(D_primitive)
 	print("")
-	print("Support")	
+	print("Support")
 	for p in D_support[:4]:
 		print(p[0])
 		print(p[1])
