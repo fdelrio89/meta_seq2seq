@@ -211,7 +211,7 @@ def extract(include,arr):
     assert len(include)==len(arr)
     return [a for idx,a in enumerate(arr) if include[idx]]
 
-def evaluation_battery(sample_eval_list, encoder, decoder, input_lang, output_lang, max_length, verbose=False):
+def evaluation_battery(sample_eval_list, encoder, decoder, input_lang, output_lang, max_length, verbose=False, force_cpu=False):
     # Evaluate a list of episodes
     #
     # Input 
@@ -224,10 +224,12 @@ def evaluation_battery(sample_eval_list, encoder, decoder, input_lang, output_la
     # 
     # Output
     #   (acc_novel, acc_autoencoder) average accuracy for novel items in query set, and support items in query set
+    if force_cpu:
+        USE_CUDA = False
     list_acc_val_novel = []
     list_acc_val_autoencoder = []
     for idx,sample in enumerate(sample_eval_list):
-        acc_val_novel, acc_val_autoencoder, yq_predict, in_support, all_attention_by_query, memory_attn_steps = evaluate(sample, encoder, decoder, input_lang, output_lang, max_length)
+        acc_val_novel, acc_val_autoencoder, yq_predict, in_support, all_attention_by_query, memory_attn_steps = evaluate(sample, encoder, decoder, input_lang, output_lang, max_length, force_cpu=force_cpu)
         list_acc_val_novel.append(acc_val_novel)
         list_acc_val_autoencoder.append(acc_val_autoencoder)
         if verbose:
@@ -244,7 +246,7 @@ def evaluation_battery(sample_eval_list, encoder, decoder, input_lang, output_la
             display_input_output(extract(np.logical_not(in_support),sample['xq']),extract(np.logical_not(in_support),yq_predict),extract(np.logical_not(in_support),sample['yq']))
     return np.mean(list_acc_val_novel), np.mean(list_acc_val_autoencoder)
 
-def evaluate(sample, encoder, decoder, input_lang, output_lang, max_length):
+def evaluate(sample, encoder, decoder, input_lang, output_lang, max_length, force_cpu=False):
     # Evaluate an episode
     # 
     # Input
@@ -261,6 +263,9 @@ def evaluate(sample, encoder, decoder, input_lang, output_lang, max_length):
     #   is_support : [n x 1 bool] indicates for each query item whether it is in the support set
     #   all_attn_by_time : list (over time step) of batch_size x max_input_length tensors
     #   memory_attn_steps : attention over support items at every step for each query [max_xq_length x nq x ns]
+    if force_cpu:
+        USE_CUDA = False
+
     encoder.eval()
     decoder.eval()
 

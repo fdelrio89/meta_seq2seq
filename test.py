@@ -131,26 +131,26 @@ def eval_network(fn_in_model):
             describe_model(decoder)
             if eval_type == 'val': 
                 print('Evaluating VALIDATION performance on pre-generated validation set')
-                acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True)
+                acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
                 print('Acc Retrieval (val): ' + str(round(acc_val_retrieval,1)))
                 print('Acc Generalize (val): ' + str(round(acc_val_gen,1)))
             elif eval_type == 'addprim_jump':                    
                 print('Evaluating TEST performance on SCAN addprim_jump')
                 print('  ...support set is just the isolated primitives')
                 mybatch = scan_evaluation_prim_only('addprim_jump','test',input_lang,output_lang)
-                acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True)
+                acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
             elif eval_type == 'length':                    
                 print('Evaluating TEST performance on SCAN length')
                 print('  ...over multiple support sets as contributed by the pre-generated validation set')
                 samples_val = scan_evaluation_val_support('length','test',input_lang,output_lang,samples_val)
-                acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True)
+                acc_val_gen, acc_val_retrieval = evaluation_battery(samples_val, encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
                 print('Acc Retrieval (val): ' + str(round(acc_val_retrieval,1)))
                 print('Acc Generalize (val): ' + str(round(acc_val_gen,1)))
             elif eval_type == 'template_around_right':
                 print('Evaluating TEST performance on the SCAN around right')
                 print(' ...with just direction mappings as support set')
                 mybatch = scan_evaluation_dir_only('template_around_right','test',input_lang,output_lang)
-                acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True)
+                acc_val_gen, acc_val_retrieval = evaluation_battery([mybatch], encoder, decoder, input_lang, output_lang, max_length_eval, verbose=True, force_cpu=True)
             else:
                 assert False
 
